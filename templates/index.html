@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fare - [F]ile Sh[are]</title>
+</head>
+<body>
+<h2>%(username)s 欢迎你的登录！</h2>
+<h1>文件共享服务器</h1>
+<p><a href="/logout">~ 登出 ~</a></p>
+<p><a href="/details">~ 在线文件列表 ~</a></p>
+<form enctype="multipart/form-data" method="post" action="/upload">
+    <input type="file" name="file" /><br /><br />
+    <input type="submit" value="submit" />
+</form>
+</body>
+</html>
