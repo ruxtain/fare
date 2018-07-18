@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 # @Author: michael
 # @Date:   2018-07-17 14:28:14
-# @Last Modified by:   michael
-# @Last Modified time: 2018-07-18 12:56:20
+# @Last Modified by:   ruxtain
+# @Last Modified time: 2018-07-18 20:44:33
 
 from wsgiref.simple_server import make_server
 from cgi import FieldStorage 
@@ -37,10 +37,7 @@ url_mapping = {
 }
         
 if __name__ == '__main__':
-    if get_ip() == '192.168.191.2': # mac
-        host = 'localhost'
-    else:
-        host = '192.168.191.2'
+    host = 'localhost'
     port = 8000
     with make_server(host, port, app) as server:
         print('Listening on {}:{} ...'.format(host, port))
