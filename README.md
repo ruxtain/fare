@@ -17,3 +17,7 @@ fare as in [f]ile sh[are].
 将 main.py 中 host 换成你的局域网 IP，然后直接运行项目根目录下的 main.py 即可。
 
 默认有一个名为 test，密码为 test 的用户帐号可供测试。
+
+## 效果图
+
+![预览效果](https://github.com/ruxtain/fare/raw/master/preview.png)
