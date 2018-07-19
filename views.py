@@ -3,7 +3,7 @@
 # @Author: michael
 # @Date:   2018-07-17 16:20:26
 # @Last Modified by:   ruxtain
-# @Last Modified time: 2018-07-19 08:42:51
+# @Last Modified time: 2018-07-19 20:12:15
 
 from cgi import FieldStorage 
 from urllib.parse import parse_qs, quote
@@ -16,6 +16,7 @@ import secure
 
 root = os.path.dirname(__file__)
 storage = os.path.join(root, 'storage')
+os.makedirs(storage, exist_ok=True) # 确保文件存在
 
 
 def _buffer(ifile, blocksize=1048576):
@@ -52,9 +53,7 @@ def render(name, context={}):
 def login_required(url):
     '''
     未登录的用户会跳转了形参 url 指定的位置
-    关于装饰器，啰嗦一句，装饰器返回的结果就是被装饰函数调用后返回的结果，
-    所以里面的函数一定要调用，或者直接返回“调用”后的返回值
-
+    关于装饰器，啰嗦一句，装饰器返回的结果必须是一个函数（不要去调用它）
     注释1: 关于返回值。302 的跳转完全的浏览器乖乖听服务器的指示而跳转。
     假如浏览器不配合，拿到 302 当作 200 处理，那么我的数据会泄露吗？
     不会，因为我对这个未经登录的请求返回的是 b''，所以浏览器是否配合不影响安全性。

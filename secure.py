@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 # @Author: michael
 # @Date:   2018-07-17 19:12:27
-# @Last Modified by:   michael
-# @Last Modified time: 2018-07-18 14:38:57
+# @Last Modified by:   ruxtain
+# @Last Modified time: 2018-07-19 09:20:06
 
 '''
 
@@ -34,6 +34,9 @@ users_path = os.path.join(root, 'data/users.json')
 sessions_path = os.path.join(root, 'data/sessions')
 file_storage_path = os.path.join(root, 'storage')
 file_info_path = os.path.join(root, 'data/file_info')
+
+os.makedirs(sessions_path, exist_ok=True)
+os.makedirs(file_info_path, exist_ok=True)
 
 def _format_file_size(size): # Byte
     if size > 1024**3: # GB
