@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Fare - [F]ile Sh[are]</title>
+<style type="text/css">
+body {
+    background-color: #fff;
+}
+#username {
+    color: #933;
+}
+a {
+    color: #68f;
+}
+div.main {
+    margin: 0 auto;
+    width: 700px;
+    text-align: center;
+}
+.fare_button {
+    padding: 10px;
+    color: white;
+    background-color: #1E90FF;
+    border: 1px solid #1E90FF;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 180px;
+}
+.fare_button:hover {
+    background-color: #5599FF;
+}
+.fare_button:focus {
+    outline: none;
+}
+#custom-text {
+    margin-left: 10px;
+    font-family: Microsoft YaHei;
+    color: #88a;
+}
+table * {
+    padding: 3px 6px;
+}
+table td {
+    text-align: left;
+}
+</style>
+
+</head>
+    <body>
+    <div class="wrapper">
+        <div class="main">
+            <h1>文件共享服务器</h1>
+            <p>当前用户：<span id="username">%(username)s</span> · <a href="/logout">登出</a></p>
+            <hr>
+            <form enctype="multipart/form-data" method="post" action="/upload">
+            <p>
+                <span id="custom-text">未选择任何文件</span>
+            </p>
+            <p>
+            <button type="button" id="custom-button" class="fare_button">选择文件</button>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <button type="button" id="custom-submit" class="fare_button">上传文件</button>
+            </p>
+                <input type="file" id="real-file" name="file" hidden />
+                <input type="submit" id="real-submit" value="submit" hidden />
+            </form>
+            <table cellspacing="0" cellpadding="0" >
+                <tr>
+                    <th>文件名</th>
+                    <th>文件大小</th>
+                    <th>上传时间</th>
+                    <th>上传人</th>
+                </tr>
+                %(file_info)s
+            </table>
+        </div>
+    </div>
+
+  <script type="text/javascript">
+    const realFileBtn = document.getElementById("real-file");
+    const customBtn = document.getElementById("custom-button");
+    const customTxt = document.getElementById("custom-text");
+    const customSubmit = document.getElementById("custom-submit");
+    const realSubmit = document.getElementById("real-submit");
+
+    customBtn.addEventListener("click", function() {
+      realFileBtn.click(); 
+    });
+
+    customSubmit.addEventListener("click", function() {
+        realSubmit.click();
+    });
+
+    // 一旦添加文件，value（文件路径）就改变了，于是拿这个值
+    realFileBtn.addEventListener("change", function() {
+      if (realFileBtn.value) {
+        // 用正则筛选出文件的 basename 注意要包含中文
+        customTxt.innerHTML = realFileBtn.value.match(/[\/\\]([\u4e00-\u9fa5\w\d\s\.\+\-(\)]+)$/)[1];
+        // customTxt.innerHTML = realFileBtn.value.match(/.+\\./)[0];
+      } else {
+        customTxt.innerHTML = "未选择任何文件";
+      }
+    });
+
+  </script>    
+    </body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -2,19 +2,13 @@
 # -*- coding: utf-8 -*-
 # @Author: michael
 # @Date:   2018-07-17 14:28:14
-# @Last Modified by:   ruxtain
-# @Last Modified time: 2018-07-18 20:44:33
+# @Last Modified by:   michael
+# @Last Modified time: 2018-07-19 08:42:11
 
 from wsgiref.simple_server import make_server
 from cgi import FieldStorage 
 import socket
 import views
-
-def get_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(('114.114.114.114', 80))
-    return s.getsockname()[0] # 本机局域网IP
-
 
 def url_route(url):
     '''找不到对应 url 的，返回一个 page_404'''
@@ -28,7 +22,7 @@ def app(env, callback):
     return [body]
 
 url_mapping = {
-    '/': views.index,
+    '/': views.home,
     '/login': views.login,
     '/logout': views.logout,
     '/details': views.details,

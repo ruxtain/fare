@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 # @Author: michael
 # @Date:   2018-07-17 16:20:26
-# @Last Modified by:   michael
-# @Last Modified time: 2018-07-18 14:49:46
+# @Last Modified by:   ruxtain
+# @Last Modified time: 2018-07-19 08:42:51
 
 from cgi import FieldStorage 
 from urllib.parse import parse_qs, quote
-import hashlib # 取文件进行 hash 然后保存文件名.. 其实不用，可以直接有重名的添序号嘛...
 
 import mimetypes
 import glob
@@ -147,12 +146,34 @@ def details(env):
     return status, headers, render("details.html", context={"文件信息": trs})
 
 @login_required('/login')
+def home(env):
+    status = '200 OK'
+    headers = [('Content-Type', 'text/html; charset=utf-8')]
+    trs = ''
+    for file in glob.glob(storage + '/*'):
+        file = os.path.basename(file)
+        link = '/download?filename={}'.format(file)
+        info = secure.get_file_info(file)
+
+        size =  secure._format_file_size(info['size'])
+        datetime = info['datetime']
+        username = info['username']
+
+        tr = '<tr><td><a href="{}" >{}</a></td><td>{}</td><td>{}</td><td>{}</td><tr>'.format(link, file, size, datetime, username)
+        trs += tr
+    context = {
+        "username": secure.get_username(env),
+        "file_info": trs,
+    }
+    return status, headers, render("home.html", context=context)
+
+@login_required('/login')
 def upload(env):
     status = '302 FOUND' # 有 302 就不需要再制作页面内容了
     headers = [
         ('Content-Type', 'text/html; charset=utf-8'),
         ('Status', '302'), # must be str
-        ('Location', '/details'),
+        ('Location', '/'),
     ]
     form = FieldStorage(environ=env, fp=env['wsgi.input'])
     for key in form.keys():

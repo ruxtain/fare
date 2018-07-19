@@ -1,6 +1,6 @@
 # custom files
 .DS_Store
-test*.py
+test*
 debug_*
 data/file_info/*
 data/sessions/*
