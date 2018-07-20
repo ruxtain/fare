@@ -3,7 +3,7 @@
 # @Author: michael
 # @Date:   2018-07-17 19:12:27
 # @Last Modified by:   ruxtain
-# @Last Modified time: 2018-07-19 09:20:06
+# @Last Modified time: 2018-07-20 19:53:32
 
 '''
 
@@ -163,9 +163,14 @@ def insert_file_info(filename, username):
 
 def get_file_info(filename):
     infopath = os.path.join(file_info_path, filename+'.data')
-    with open(infopath, 'r', encoding='utf-8') as f:
-        info = json.loads(f.read())
+    try:
+        with open(infopath, 'r', encoding='utf-8') as f:
+            info = json.loads(f.read())
+            return info
+    except FileNotFoundError: # 可能是管理员直接手动添加了一个文件，或者误删 .data 文件，任务是无主文件
+        info = {"username": "unknown", "datetime": "unknown", "size": 0}
         return info
+
     
 
 

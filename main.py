@@ -3,7 +3,7 @@
 # @Author: michael
 # @Date:   2018-07-17 14:28:14
 # @Last Modified by:   ruxtain
-# @Last Modified time: 2018-07-19 09:17:05
+# @Last Modified time: 2018-07-20 19:55:08
 
 from wsgiref.simple_server import make_server
 from cgi import FieldStorage 
@@ -32,7 +32,7 @@ url_mapping = {
 }
         
 if __name__ == '__main__':
-    host = 'localhost'
+    host = '0.0.0.0'
     port = 8000
     
     with make_server(host, port, app) as server:
