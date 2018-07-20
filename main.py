@@ -3,7 +3,7 @@
 # @Author: michael
 # @Date:   2018-07-17 14:28:14
 # @Last Modified by:   ruxtain
-# @Last Modified time: 2018-07-20 19:55:08
+# @Last Modified time: 2018-07-20 20:33:35
 
 from wsgiref.simple_server import make_server
 from cgi import FieldStorage 
@@ -26,8 +26,8 @@ url_mapping = {
     '/': views.home,
     '/login': views.login,
     '/logout': views.logout,
-    '/details': views.details,
     '/upload': views.upload,
+    '/delete': views.delete,
     '/download': views.download,
 }
         

@@ -1,11 +1,6 @@
-#! /Users/michael/anaconda3/bin/python
-# -*- coding: utf-8 -*-
-# @Author: michael
-# @Date:   2018-07-17 19:12:27
-# @Last Modified by:   ruxtain
-# @Last Modified time: 2018-07-20 19:53:32
-
-'''
+"""
+由于没有数据库的支持
+所有增改删查需要用一个函数表示
 
 用一个 json 文件（字典）保存所有的用户信息
 每次新人注册更新这个字典
@@ -19,8 +14,7 @@
 约定：
 filename 指 basename
 filepath 指 全路径
-
-'''
+"""
 
 from urllib.parse import parse_qs
 import uuid
@@ -168,10 +162,18 @@ def get_file_info(filename):
             info = json.loads(f.read())
             return info
     except FileNotFoundError: # 可能是管理员直接手动添加了一个文件，或者误删 .data 文件，任务是无主文件
-        info = {"username": "unknown", "datetime": "unknown", "size": 0}
+        info = {"username": "匿名", "datetime": "0000-00-00 00:00:00", "size": 0}
         return info
 
-    
+def del_file_info(filename):
+    infopath = os.path.join(file_info_path, filename+'.data')
+    try:
+        os.remove(infopath)
+    except FileNotFoundError: # 暂未预料到其他可能的异常
+        pass
+    finally:
+        return True
+
 
 
 

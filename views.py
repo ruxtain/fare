@@ -1,9 +1,8 @@
-#! /Users/michael/anaconda3/bin/python
-# -*- coding: utf-8 -*-
-# @Author: michael
-# @Date:   2018-07-17 16:20:26
-# @Last Modified by:   ruxtain
-# @Last Modified time: 2018-07-19 20:12:15
+"""
+由于没有使用模板系统
+模板文件中无逻辑运算
+一切循环判断都在 views.py 里进行
+"""
 
 from cgi import FieldStorage 
 from urllib.parse import parse_qs, quote
@@ -16,7 +15,7 @@ import secure
 
 root = os.path.dirname(__file__)
 storage = os.path.join(root, 'storage')
-os.makedirs(storage, exist_ok=True) # 确保文件存在
+os.makedirs(storage, exist_ok=True) # 确保目录存在
 
 
 def _buffer(ifile, blocksize=1048576):
@@ -95,13 +94,14 @@ def login(env):
         password = form.get('password', [''])[0]
         if secure.auth(username, password):
             body = '登录成功！'.encode('utf-8')
+            # 创建 session 文件并返回 session id 的值
             session_id = secure.set_session(username)
             headers.append(('Set-Cookie', 'sid={}'.format(session_id))) 
             status = '302 FOUND' # 覆盖之前的200 ok
             headers.append(('Location', '/')) 
             # wsgi 服务器自带了一个 sessionid.. 我后面看，现在先用自定义的
         else:
-            body = '<h2>登录失败..联系服务器机主老谭问问看..</h2><a href="/">带我回登录页~</a>'.encode('utf-8')
+            body = '<h2>登录失败..联系服务器机主 ruxtain@github 问问看..</h2><a href="/">带我回登录页~</a>'.encode('utf-8')
 
     return status, headers, body
 
@@ -115,50 +115,35 @@ def logout(env):
     ]
     return status, headers, b''
 
-@login_required('/login')
-def index(env):
-    status = '200 OK'
-    body = render("index.html", {"username": secure.get_username(env)})
-    headers = [
-        ('Content-Type', 'text/html; charset=utf-8'),
-        ('Content-Length', str(len(body))),
-    ]
-    return status, headers, body
-
-@login_required('/login')
-def details(env):
-    status = '200 OK'
-    headers = [('Content-Type', 'text/html; charset=utf-8')]
-    trs = ''
-    for file in glob.glob(storage + '/*'):
-        file = os.path.basename(file)
-        link = '/download?filename={}'.format(file)
-        info = secure.get_file_info(file)
-
-        size =  secure._format_file_size(info['size'])
-        datetime = info['datetime']
-        username = info['username']
-
-        tr = '<tr><td><a href="{}" >{}</a></td><td>{}</td><td>{}</td><td>{}</td><tr>'.format(link, file, size, datetime, username)
-        trs += tr
-    trs += '<p><a href="/">回到首页</a></p>'
-    return status, headers, render("details.html", context={"文件信息": trs})
 
 @login_required('/login')
 def home(env):
     status = '200 OK'
     headers = [('Content-Type', 'text/html; charset=utf-8')]
     trs = ''
+    tr_template = """<tr>
+        <td><a href="{}" >{}</a></td>
+        <td>{}</td>
+        <td>{}</td>
+        <td>{}</td>
+        {}
+    <tr>"""
     for file in glob.glob(storage + '/*'):
         file = os.path.basename(file)
-        link = '/download?filename={}'.format(file)
+        download_link = '/download?filename={}'.format(file)
+        delete_link = '/delete?filename={}'.format(file)
         info = secure.get_file_info(file)
-
         size =  secure._format_file_size(info['size'])
         datetime = info['datetime']
         username = info['username']
 
-        tr = '<tr><td><a href="{}" >{}</a></td><td>{}</td><td>{}</td><td>{}</td><tr>'.format(link, file, size, datetime, username)
+        current_user = secure.get_username(env)
+        if current_user == username:
+            delete_td = '<td><a href="javascript:if(confirm(\'确实要（不可恢复地）删除该内容吗?\')){{location=\'{}\'}}">[删除]</a></td>'.format(delete_link)
+        else:
+            delete_td = '<td><a style="color: #aaa">[删除]</a></td>'
+
+        tr = tr_template.format(download_link, file, size, datetime, username, delete_td)
         trs += tr
     context = {
         "username": secure.get_username(env),
@@ -168,7 +153,7 @@ def home(env):
 
 @login_required('/login')
 def upload(env):
-    status = '302 FOUND' # 有 302 就不需要再制作页面内容了
+    status = '302 FOUND'
     headers = [
         ('Content-Type', 'text/html; charset=utf-8'),
         ('Status', '302'), # must be str
@@ -204,6 +189,27 @@ def download(env):
         ('Content-Disposition', 'attachment; filename={}'.format(quote(filename))),  # 下载文件的文件名 中文名必须用 quote
     ]
     return status, headers, body
+
+@login_required('/login')
+def delete(env):
+    qs = parse_qs(env['QUERY_STRING'])
+    filename = qs.get('filename', [''])[0] 
+
+    current_user = secure.get_username(env)
+    info = secure.get_file_info(filename)
+    if info["username"] == current_user: # 确保删除者是文件主人；home 里面的校验不足以防止直接的 post 
+        secure.del_file_info(filename) # 删除文件信息
+        filepath = os.path.join(storage, filename)
+        os.remove(filepath) # 删除文件
+
+    status = '302 FOUND'
+    headers = [
+        ('Content-Type', 'text/html; charset=utf-8'),
+        ('Status', '302'), # must be str
+        ('Location', '/'),
+    ]
+    return status, headers, b''
+
 
 
 
