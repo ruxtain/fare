@@ -19,13 +19,14 @@ div.main {
     text-align: center;
 }
 .fare_button {
-    padding: 10px;
+    padding: 8px;
     color: white;
     background-color: #1E90FF;
     border: 1px solid #1E90FF;
     border-radius: 5px;
     cursor: pointer;
     width: 180px;
+    font-size: 15px;
 }
 .fare_button:hover {
     background-color: #5599FF;
@@ -50,8 +51,8 @@ table td {
     <body>
     <div class="wrapper">
         <div class="main">
-            <h1 style="font-size: 40px; font-family: sans-serif;">fare <span style="font-size: 0.85em">文件共享服务器</span></h1>
-            <p>当前用户：<span id="username">%(username)s</span> · <a href="/logout">登出</a></p>
+            <h1 style="font-size: 40px; font-family: sans-serif;">fare <span style="font-size: 0.85em">文件共享</span></h1>
+            <p>当前用户：<span id="username">%(username)s</span> · <a href="/logout">退出</a></p>
             <hr>
             <form enctype="multipart/form-data" method="post" action="/upload">
             <p>
@@ -71,6 +72,7 @@ table td {
                     <th>文件大小</th>
                     <th>上传时间</th>
                     <th>上传人</th>
+                    <th>操作</th>
                 </tr>
                 %(file_info)s
             </table>
@@ -106,21 +108,3 @@ table td {
   </script>    
     </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

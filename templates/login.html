@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>登录啊少年！</title>
+    <title>欢迎使用 fare</title>
     <style type="text/css">
         body {
             background-color: #fff;
@@ -18,11 +18,12 @@
         }
         div.main {
             margin: 0 auto;
-            width: 700px;
+            width: 800px;
             text-align: center;
         }
         input{
-                width: 180px;
+                font-size: 15px;
+                width: 195px;
                 border: 1px solid #ccc;
                 padding: 7px 0px;
                 border-radius: 3px;
@@ -46,7 +47,7 @@
     border: 1px solid #1E90FF;
     border-radius: 5px;
     cursor: pointer;
-    width: 180px;
+    width: 200px;
         }
         #login:hover {
             background-color: #5599FF;
@@ -58,16 +59,18 @@
 <body>
     <div class="wrapper">
         <div class="main">    
-            <h1 style="font-size: 40px; font-family: sans-serif;">fare</h1>
-            <p>[F]ile Sh[are] 局域网文件共享</p>
-            <p>人生苦短，我用 Python</p>
+            <h1 style="font-size: 40px; font-family: sans-serif;">fare <span style="font-size: 0.85em">文件共享</span></h1>
+            <p>已经登录？<a href="/">点击这里</a> | 更多信息：<a href="https://github.com/ruxtain/fare" target="_blank">源代码</a></p>
+            <hr>
+            <br>
             <form method="post">
                 <p>
-                <input type="text" name="username" placeholder="用户名">
+                <input type="text" id="username" name="username" placeholder="用户名">
                 </p>
                 <p>
                 <input type="password" name="password" placeholder="密码">
                 </p>
+                %(error_info)s
                 <p>
                 <input type="submit" name="submit" id="login" value="登录">
                 </p>
@@ -75,4 +78,11 @@
         </div>
     </div>
 </body>
+<script type="text/javascript">
+const username = document.getElementById("username");
+const error_info = document.getElementById("error_info");
+username.addEventListener("focus", function() {
+    error_info.style.display = "none";
+});    
+</script>
 </html>

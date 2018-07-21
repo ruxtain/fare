@@ -10,6 +10,7 @@ from urllib.parse import parse_qs, quote
 import mimetypes
 import glob
 import os
+import re
 
 import secure
 
@@ -17,6 +18,26 @@ root = os.path.dirname(__file__)
 storage = os.path.join(root, 'storage')
 os.makedirs(storage, exist_ok=True) # 确保目录存在
 
+def _ellipsis(s, n=33):
+    '''
+    s 字符串
+    n 保留的长度（中文一个字视为2个英文字母的长度）
+    多余的部分变成 ...
+    '''
+    visible = ''
+    length = 0
+    for i in s:
+        if len(i.encode('utf-8')) == len(i): # 英文字符
+            length += 1
+        else:
+            length += 2
+        visible += i
+        if n <= length:
+            break
+    if visible != s:
+        return visible + ' ...'
+    else:
+        return s
 
 def _buffer(ifile, blocksize=1048576):
     '''用于读取大文件'''
@@ -33,10 +54,49 @@ def _is_file(item):
     '''
     return getattr(item, '_binary_file', None) and item.filename
 
-def _save_file(file, name):
-    with open(os.path.join(storage, name), 'wb') as f:
+def _rename_file(filename):
+    '''
+    获得一个文件名，确保没有重复，有重复则加序号 ~1 , ~2
+    '''
+    target_filename, target_ext = os.path.splitext(filename)
+
+    if target_ext: # 有后缀名
+        pattern = '(^' + target_filename + ')~*(\\d*)(\\' + target_ext + '$)'  # 找出一个系列的名字
+    else:
+        pattern = '(^' + target_filename + ')~*(\\d*)' 
+
+    matched = []
+    for existing_filepath in glob.glob(storage + '/*'):
+        existing_filename = os.path.basename(existing_filepath)
+        match_filename = re.findall(pattern, existing_filename)
+
+        if match_filename:
+            match_filename = list(match_filename[0]) # 得到列表
+            match_filename.append('') # 使得无后缀的多一项，有后缀也多一项，不过被忽略了
+            if match_filename[1] == '':
+                match_filename[1] = '0'
+            matched.append(match_filename)
+
+    if matched: # 有内容
+        last_filename = max(matched, key=lambda i:int(i[1]))
+        return "{}~{}{}".format(last_filename[0], int(last_filename[1])+1, last_filename[2])
+
+    else:
+        return filename # 原封不动返回
+
+
+def _save_file(file, filename):
+    '''
+    3个功能：
+    1. 将文件分块储存
+    2. 确保没有重名文件，如果有，则用序号重命名，如 x，又上传x，则为 x_1, x_2..
+    3. 返回这个最终文件名，以便文件信息录入
+    '''
+    final_filename = _rename_file(filename)
+    with open(os.path.join(storage, final_filename), 'wb') as f:
         for chunk in _buffer(file):
             f.write(chunk)
+    return final_filename
 
 def render(name, context={}):
     '''
@@ -83,7 +143,7 @@ def login(env):
     headers = [('Content-Type', 'text/html; charset=utf-8')]
 
     if env['REQUEST_METHOD'] == 'GET':
-        body = render("login.html")
+        body = render("login.html", context={"error_info": ''})
 
     elif env['REQUEST_METHOD'] == 'POST':
         length = int(env['CONTENT_LENGTH'])
@@ -101,8 +161,7 @@ def login(env):
             headers.append(('Location', '/')) 
             # wsgi 服务器自带了一个 sessionid.. 我后面看，现在先用自定义的
         else:
-            body = '<h2>登录失败..联系服务器机主 ruxtain@github 问问看..</h2><a href="/">带我回登录页~</a>'.encode('utf-8')
-
+            body = render("login.html", context={"error_info": '<span id="error_info" style="color: #a33">提示: 用户名或者密码错误</span>'})
     return status, headers, body
 
 @login_required('/login')
@@ -122,17 +181,17 @@ def home(env):
     headers = [('Content-Type', 'text/html; charset=utf-8')]
     trs = ''
     tr_template = """<tr>
-        <td><a href="{}" >{}</a></td>
-        <td>{}</td>
-        <td>{}</td>
-        <td>{}</td>
-        {}
+        <td><a title="{filename}" href="{download_link}" >{filename_elp}</a></td>
+        <td>{size}</td>
+        <td>{datetime}</td>
+        <td>{username}</td>
+        {delete_td}
     <tr>"""
-    for file in glob.glob(storage + '/*'):
-        file = os.path.basename(file)
-        download_link = '/download?filename={}'.format(file)
-        delete_link = '/delete?filename={}'.format(file)
-        info = secure.get_file_info(file)
+    for filepath in glob.glob(storage + '/*'):
+        filename = os.path.basename(filepath)
+        download_link = '/download?filename={}'.format(filename)
+        delete_link = '/delete?filename={}'.format(filename)
+        info = secure.get_file_info(filename)
         size =  secure._format_file_size(info['size'])
         datetime = info['datetime']
         username = info['username']
@@ -143,7 +202,15 @@ def home(env):
         else:
             delete_td = '<td><a style="color: #aaa">[删除]</a></td>'
 
-        tr = tr_template.format(download_link, file, size, datetime, username, delete_td)
+        tr = tr_template.format(
+            download_link = download_link, 
+            filename = filename,
+            filename_elp = _ellipsis(filename), 
+            size = size, 
+            datetime = datetime, 
+            username = _ellipsis(username), 
+            delete_td = delete_td
+        )
         trs += tr
     context = {
         "username": secure.get_username(env),
@@ -163,11 +230,11 @@ def upload(env):
     for key in form.keys():
         data = form[key]
         if _is_file(data):
-            name = data.filename # basename
+            filename = data.filename # basename
             file = data.file
-            _save_file(file, name)
+            final_filename = _save_file(file, filename) # 返回最终文件名，因为保存过程中，可能重命名为 xx_1 xx_2 
             username = secure.get_username(env)
-            secure.insert_file_info(filename=name, username=username)
+            secure.insert_file_info(filename=final_filename, username=username)
     return status, headers, b''
 
 @login_required('/login')
@@ -212,8 +279,9 @@ def delete(env):
 
 
 
-
-
+if __name__ == '__main__':
+    '''testing'''
+    _rename_file('后街女孩OP.mp4')
 
 
 
