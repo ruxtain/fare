@@ -7,7 +7,6 @@
 
 from wsgiref.simple_server import make_server
 from cgi import FieldStorage 
-import socket
 import views
 import os
 

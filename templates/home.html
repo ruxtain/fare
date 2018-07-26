@@ -52,7 +52,9 @@ table td {
     <div class="wrapper">
         <div class="main">
             <h1 style="font-size: 40px; font-family: sans-serif;">fare <span style="font-size: 0.85em">文件共享</span></h1>
-            <p>当前用户：<span id="username">%(username)s</span> · <a href="/logout">退出</a></p>
+            <p>当前用户：<span id="username">%(username)s</span> · <a href="/logout">退出</a> 
+                <span title="如需修改登录密码，请联系管理员">(?)</span>
+            </p>
             <hr>
             <form enctype="multipart/form-data" method="post" action="/upload">
             <p>
